@@ -20,24 +20,44 @@ db.connect(function(err) {
     console.log('connected')
 })
 
-app.get('/sources', function (req, res) {
+// crud sources
+app.get('/sources', function (req, res) {   // get list sources
     db.query('SELECT * FROM source', function (err, result) {
         if(err) throw err;
         return res.send({ err: false , data: result , message: 'sources list'});
     })
 })
 
-app.get('/sources/levels/words', function (req, res) {
-    db.query('SELECT * FROM word', function (err, result) {
-        if(err) throw err;
-        return res.send({ err: false , data: result , message: 'words list'});
-    })
-})
+app.post('/sources', function (req, res) {   //create source
+    let idSource = req.body.idSource;
+    let nameSource = req.body.nameSource;
+    let desSource = req.body.desSource;
+    let source = { idSource: idSource,
+                   nameSource: nameSource,  
+                   desSource: desSource };
+    if (!source) {
+        return res.status(400).send({ error:true, message: 'Please provide source' });
+    }
+    db.query("INSERT INTO source SET ? ", source , function (error, results) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'New source has been created successfully.' });
+    });
+    res.redirect('/sources')
+});
 
-app.get('/sources/levels', function (req, res) {
+// crud levels
+app.get('/sources/levels', function (req, res) {   // get list levels of sources
     db.query('SELECT * FROM level', function (err, result) {
         if(err) throw err;
         return res.send({ err: false , data: result , message: 'levels list'});
+    })
+})
+
+// crud words
+app.get('/sources/levels/words', function (req, res) {   // get list words of levels
+    db.query('SELECT * FROM word', function (err, result) {
+        if(err) throw err;
+        return res.send({ err: false , data: result , message: 'words list'});
     })
 })
 

@@ -99,7 +99,7 @@ app.put('/sources/levels/words/:id', function (req, res) {  //update word
     });
 });
 
-app.delete('/sources/levels/words/:id', function (req, res) {
+app.delete('/sources/levels/words/:id', function (req, res) {  // delete word
     let id = parseInt(req.params.id);
     db.query("DELETE FROM word WHERE id = ?", id , function (err, result){
         if(err) throw err;
@@ -151,10 +151,11 @@ app.delete('/sources/levels/:id', function (req, res) {   // delete level
     });
 });
 
-
-app.get('/',function(req, res){
-    res.send('Welcome to my server');
-})
-
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+  
 app.listen(port);
 console.log('Server listening on port : ' + port);

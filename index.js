@@ -20,11 +20,17 @@ db.connect(function(err) {
     console.log('connected')
 })
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+
 // crud sources
 app.get('/sources', function (req, res) {   // get list sources
     db.query('SELECT * FROM source', function (err, result) {
         if(err) throw err;
-        return res.send({ err: false , data: result , message: 'sources list'});
+        return res.send(result);
     })
 })
 
@@ -66,7 +72,7 @@ app.delete('/sources/:id', function (req, res) {   //delete source
 app.get('/sources/levels/words', function (req, res) {
     db.query("SELECT * FROM word",function (err,result) {
         if(err) throw err;
-        return res.send({ err: false , data: result , message: 'words list'});
+        return res.send(result);
     });
 });
 
@@ -74,7 +80,7 @@ app.get('/sources/levels/words/:id', function (req, res) {   // get list words o
     let idLevel = parseInt(req.params.id);
     db.query('SELECT vocab, meaning FROM word WHERE idLevel = ?', idLevel , function (err, result) {
         if(err) throw err;
-        return res.send({ err: false , data: result , message: 'words list'});
+        return res.send(result);
     });
 });
 
@@ -111,7 +117,7 @@ app.delete('/sources/levels/words/:id', function (req, res) {  // delete word
 app.get('/sources/levels', function (req, res) {
     db.query("SELECT * FROM level",function (err,result) {
         if(err) throw err;
-        return res.send({ err: false , data: result , message: 'levels list'});
+        return res.send(result);
     })
 })
 
@@ -119,7 +125,7 @@ app.get('/sources/levels/:id', function (req, res) {   // get list levels of sou
     let idSource = parseInt(req.params.id);
     db.query('SELECT level, idSource FROM level WHERE idSource = ?', idSource , function (err, result) {
         if(err) throw err;
-        return res.send({ err: false , data: result , message: 'levels list'});
+        return res.send(result);
     })
 })
 
@@ -151,11 +157,6 @@ app.delete('/sources/levels/:id', function (req, res) {   // delete level
     });
 });
 
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
   
 app.listen(port);
 console.log('Server listening on port : ' + port);

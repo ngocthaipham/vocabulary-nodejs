@@ -4,9 +4,12 @@ const mysql = require('mysql');
 const router = express.Router();
 const port = process.env.PORT || 5000 ;
 const bodyParser = require('body-parser');
+const cors = require('cors')
 
 app.use(bodyParser.urlencoded({ extended: true })) ;
 app.use(bodyParser.json());
+
+app.use(cors());
 
 var db = mysql.createConnection({
     host: 'localhost',
@@ -78,7 +81,7 @@ app.get('/sources/levels/words', function (req, res) {
 
 app.get('/sources/levels/words/:id', function (req, res) {   // get list words of levels
     let idLevel = parseInt(req.params.id);
-    db.query('SELECT vocab, meaning FROM word WHERE idLevel = ?', idLevel , function (err, result) {
+    db.query('SELECT id, vocab, meaning FROM word WHERE idLevel = ?', idLevel , function (err, result) {
         if(err) throw err;
         return res.send(result);
     });
@@ -89,6 +92,17 @@ app.post('/sources/levels/words/:id', function (req, res) {   // add word
     let vocab = req.body.vocab;
     let meaning = req.body.meaning;
     db.query("INSERT INTO word SET vocab = ?, meaning = ?, idLevel = ?",[ vocab, meaning, idLevel ], function (err, result) {
+        if(err) throw err;
+        res.redirect('/sources/levels/words');
+    });
+});
+
+app.post('/sources/levels/words', function (req, res) {   // add word
+    let id = req.body.id
+    let idLevel = req.body.idLevel;
+    let vocab = req.body.vocab;
+    let meaning = req.body.meaning;
+    db.query("INSERT INTO word SET id = ?, idLevel = ?, vocab = ?, meaning = ?",[ id, idLevel , vocab, meaning], function (err, result) {
         if(err) throw err;
         res.redirect('/sources/levels/words');
     });
@@ -123,7 +137,7 @@ app.get('/sources/levels', function (req, res) {
 
 app.get('/sources/levels/:id', function (req, res) {   // get list levels of sources
     let idSource = parseInt(req.params.id);
-    db.query('SELECT level, idSource FROM level WHERE idSource = ?', idSource , function (err, result) {
+    db.query('SELECT idLevel, level, idSource FROM level WHERE idSource = ?', idSource , function (err, result) {
         if(err) throw err;
         return res.send(result);
     })
@@ -133,6 +147,16 @@ app.post('/sources/levels/:id', function (req, res) {   //create level
     let idLevel = req.body.idLevel;
     let level = req.body.level
     let idSource = parseInt(req.params.id);
+    db.query("INSERT INTO level SET idLevel = ?, level = ? , idSource = ? ", [ idLevel, level, idSource ] , function (err, results) {
+        if (err) throw err;
+        return res.redirect('/sources/levels');
+    });
+}); 
+
+app.post('/sources/levels', function (req, res) {   //create level
+    let idLevel = req.body.idLevel;
+    let level = req.body.level
+    let idSource =req.body.idSource;
     db.query("INSERT INTO level SET idLevel = ?, level = ? , idSource = ? ", [ idLevel, level, idSource ] , function (err, results) {
         if (err) throw err;
         return res.redirect('/sources/levels');

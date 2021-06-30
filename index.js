@@ -37,6 +37,14 @@ app.get('/sources', function (req, res) {   // get list sources
     })
 })
 
+app.get('/sources/:id', function (req, res) {   // get list sources
+    let idSource = parseInt(req.params.id);
+    db.query('SELECT * FROM source WHERE idSource = ?', idSource , function (err, result) {
+        if(err) throw err;
+        return res.send(result);
+    })
+})
+
 app.post('/sources', function (req, res) {   //create source
     let idSource = req.body.idSource;
     let nameSource = req.body.nameSource;
@@ -49,7 +57,7 @@ app.post('/sources', function (req, res) {   //create source
     }
     db.query("INSERT INTO source SET ? ", source , function (err, results) {
         if (err) throw err;
-        return res.redirect('/sources');
+        return res.send('creat success');
     });
 });
 
@@ -81,7 +89,7 @@ app.get('/words', function (req, res) {
 
 app.get('/words/:id', function (req, res) {   // get list words of levels
     let idLevel = parseInt(req.params.id);
-    db.query('SELECT id, vocab, meaning FROM word WHERE idLevel = ?', idLevel , function (err, result) {
+    db.query('SELECT id, idLevel, vocab, meaning FROM word WHERE idLevel = ?', idLevel , function (err, result) {
         if(err) throw err;
         return res.send(result);
     });

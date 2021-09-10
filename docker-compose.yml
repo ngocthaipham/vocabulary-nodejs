@@ -1,0 +1,39 @@
+version: '3.8'
+
+services: 
+  mysqldb:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123123
+      MYSQL_DATABASE: khoahoc
+    ports:
+      - 3307:3307
+    volumes: 
+      - db-config:/etc/mysql
+      - db-data:/var/lib/mysql
+      - ./db/backup/files/:/data_backup/data
+
+volumes: 
+  db-config:
+  db-data:
+  
+   app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: node-mysql-app
+    depends_on:
+      - mysqldb
+    environment:
+     - DB_HOST: mysqldb
+     - DB_USER: root
+     - DB_PASSWORD: 123123
+     - DB_NAME: khoahoc
+     - DB_PORT: 3307
+    stdin_open: true
+    tty: true
+
+volumes: 
+  db-config:
+  db-data:

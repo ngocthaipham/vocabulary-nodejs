@@ -21,6 +21,7 @@ var db = mysql.createConnection({
   user: "root",
   password: "123123",
   database: "khoahoc",
+  port: 3306,
 });
 
 db.connect(function (err) {
@@ -666,6 +667,17 @@ app.get("/users/:userName", function (req, res) {
   );
 });
 
+app.get("/user/:userId", function (req, res) {
+  db.query(
+    "SELECT userAvatar FROM user WHERE userId= ?",
+    req.params.userId,
+    function (err, results) {
+      if (err) throw err;
+      return res.send(results);
+    }
+  );
+});
+
 app.put("/userTarget/:userName", function (req, res) {
   db.query(
     "UPDATE user SET target = ? WHERE userName = ?",
@@ -926,7 +938,7 @@ app.post("/login", function (req, res) {
               { userName: results[0].userName, userId: results[0].userId },
               "SECRETKEY"
             );
-            return res.status(200).send(token);
+            return res.status(200).send({token: token, userId : results[0].userId});
           }
           return res
             .status(401)

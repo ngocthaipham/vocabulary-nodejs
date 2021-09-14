@@ -1,35 +1,45 @@
+  
 version: '3.8'
 
 services: 
   mysqldb:
-    image: mysql
+    image: mysql:latest
+    container_name: db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 123123
       MYSQL_DATABASE: khoahoc
+      MYSQL_ROOT_PASSWORD: 123123
     ports:
-      - 3307:3307
+      - 3307:3306
     volumes: 
       - db-config:/etc/mysql
       - db-data:/var/lib/mysql
       - ./db/backup/files/:/data_backup/data
+    networks:
+      - my-app
   app:
     build:
       context: .
       dockerfile: ./Dockerfile
-    image: node-mysql-app
+    container_name: server
     depends_on:
       - mysqldb
+    links:
+      - mysqldb
+    networks:
+      - my-app
     environment:
-     - DB_HOST: mysqldb
-     - DB_USER: root
-     - DB_PASSWORD: 123123
-     - DB_NAME: khoahoc
-     - DB_PORT: 3307
+      MYSQL_HOST: mysqldb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 123123
+      MYSQL_DATABASE: khoahoc
+      MYSQL_PORT: 3306
     stdin_open: true
     tty: true
 
 volumes: 
   db-config:
   db-data:
-  
+networks:
+  my-app:
+    driver: bridge

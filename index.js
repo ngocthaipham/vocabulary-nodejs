@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const router = express.Router();
 const port = process.env.PORT || 5000;
 const bodyParser = require("body-parser");
@@ -21,7 +21,7 @@ var db = mysql.createConnection({
   user: "root",
   password: "123123",
   database: "khoahoc",
-  port: 3306,
+  port: "3306",
 });
 
 db.connect(function (err) {
@@ -86,15 +86,23 @@ var uploadMultiple = upload.fields([
   { name: "audioWord", maxCount: 1 },
 ]);
 
+app.use(express.static(__dirname)); //here is important thing - no static directory, because all static :)
+
+if(process.env.NODE_ENV === 'production'){
+  const path  =  require('path');
+  app.get('/*',(req,res)=>{
+      res.sendfile(path.resolve(__dirname,'client','build','index.html'))
+  })
+}
 // crud sources
 app.get(
   "/sources/:username/:privateState/page:page",
   isLoggedIn,
   function (req, res) {
     // get list sources
-    let totalCourse ;
-    let data ;
-    const limit = 3;
+    let totalCourse;
+    let data;
+    const limit = 9;
     const page = req.params.page;
     const offset = (page - 1) * limit;
     let userName = req.params.username;
@@ -105,20 +113,24 @@ app.get(
       `SELECT * FROM source  WHERE userName = ? AND private = ? LIMIT ${limit} OFFSET ${offset}`,
       [userName, privateState],
       function (err, result) {
-        data= result;
+        data = result;
         if (err) throw err;
         db.query(
-          `SELECT COUNT(idSource) AS count FROM source  WHERE userName = ? AND private = ?`, [userName, privateState],
+          `SELECT COUNT(idSource) AS count FROM source  WHERE userName = ? AND private = ?`,
+          [userName, privateState],
           function (err, bResult) {
             if (err) throw err;
             totalCourse = bResult[0].count;
-            return res.send({result : data ,
-            totalCourse: totalCourse, coursePerPage: limit});
+            return res.send({
+              result: data,
+              totalCourse: totalCourse,
+              coursePerPage: limit,
+            });
           }
         );
       }
     );
-   
+
     db.query(
       `SELECT sum(score) as totalScore from learning WHERE userName= ? AND date = curdate()`,
       [userName],
@@ -172,7 +184,7 @@ app.get(
   }
 );
 app.get("/sources/:privateState/page:page", function (req, res) {
-  let totalCourse ;
+  let totalCourse;
   const page = req.params.page;
   const limit = 4 * page;
   const offset = 0;
@@ -185,12 +197,16 @@ app.get("/sources/:privateState/page:page", function (req, res) {
       if (err) throw err;
       // return res.send(results);
       db.query(
-        `SELECT COUNT(idSource) AS count FROM source  WHERE  private = ?`, [privateState],
+        `SELECT COUNT(idSource) AS count FROM source  WHERE  private = ?`,
+        [privateState],
         function (err, bResult) {
           if (err) throw err;
           totalCourse = bResult[0].count;
-          return res.send({result : results ,
-          totalCourse: totalCourse, coursePerPage: limit});
+          return res.send({
+            result: results,
+            totalCourse: totalCourse,
+            coursePerPage: limit,
+          });
         }
       );
     }
@@ -205,13 +221,19 @@ app.get("/source/:id", function (req, res) {
     idSource,
     function (err, results) {
       if (err) throw err;
-      return res.send({countRating: results[0].countRating,
-        countComment: results[0].comments});
+      return res.send({
+        idSource: results[0].idSource,
+        nameSource: results[0].nameSource,
+        desSource: results[0].desSource,
+        imageSource: results[0].imageSource,
+        countRating: results[0].countRating,
+        countComment: results[0].comments,
+      });
     }
   );
 });
 
-app.post("/sources", upload.single("imageSource"), function (req, res) {
+app.post("/source", upload.single("imageSource"), function (req, res) {
   //create source
   let nameSource = req.body.nameSource;
   let desSource = req.body.desSource;
@@ -235,7 +257,7 @@ app.post("/sources", upload.single("imageSource"), function (req, res) {
   });
 });
 
-app.put("/sources/:id", upload.single("imageSource"), function (req, res) {
+app.put("/source/:id", upload.single("imageSource"), function (req, res) {
   //update source
   let idSource = parseInt(req.params.id);
   let nameSource = req.body.nameSource;
@@ -281,7 +303,9 @@ app.get("/words/:id", function (req, res) {
     idLevel,
     function (err, result) {
       if (err) throw err;
-      return res.send(result);
+      return res.send({
+        result: result,
+      });
     }
   );
 });
@@ -320,10 +344,7 @@ app.get("/vocabsLearn/:id/:isLearned", function (req, res) {
     [idLevel, isLearned],
     function (err, result) {
       if (err) throw err;
-      if (result.length !== 0) {
-        return res.send(result);
-      }
-      return res.send();
+      return res.send({ result: result });
     }
   );
 });
@@ -343,7 +364,7 @@ app.post("/words/:id", function (req, res) {
   );
 });
 
-app.post("/words", uploadMultiple, function (req, res) {
+app.post("/word", uploadMultiple, function (req, res) {
   // add word
   let idSource = req.body.idSource;
   let idLevel = req.body.idLevel;
@@ -363,7 +384,7 @@ app.post("/words", uploadMultiple, function (req, res) {
   );
 });
 
-app.put("/words/:id", uploadMultiple, function (req, res) {
+app.put("/word/:id", uploadMultiple, function (req, res) {
   //update word
   let id = parseInt(req.params.id);
   let idSource = req.body.idSource;
@@ -404,23 +425,46 @@ app.delete("/words/:id", function (req, res) {
 });
 
 // crud levels
-app.get("/levels", function (req, res) {
-  db.query("SELECT * FROM level", function (err, result) {
-    if (err) throw err;
-    return res.send(result);
-  });
-});
-
-app.get("/levels/:id", function (req, res) {
-  // get list levels of sources
-  let idSource = parseInt(req.params.id);
-  // let userName = req.params.userName;
+app.get("/level/:idSource", function (req, res) {
   db.query(
     "SELECT * FROM level WHERE idSource = ?",
-    [idSource],
+    [req.params.idSource],
     function (err, result) {
       if (err) throw err;
       return res.send(result);
+    }
+  );
+});
+
+app.get("/levels/:id/page:page", function (req, res) {
+  // get list levels of sources
+  let data;
+  let totalLevel;
+  const limit = 8;
+  const page = req.params.page;
+  const offset = (page - 1) * limit;
+  let idSource = parseInt(req.params.id);
+  // let userName = req.params.userName;
+  db.query(
+    `SELECT * FROM level WHERE idSource = ? LIMIT ${limit} OFFSET ${offset}`,
+    [idSource],
+    function (err, result) {
+      data = result;
+      if (err) throw err;
+      db.query(
+        `SELECT COUNT(idLevel) AS count FROM level  WHERE idSource=?`,
+        [idSource],
+        function (err, bResult) {
+          if (err) throw err;
+          totalLevel = bResult[0].count;
+          return res.send({
+            // result: data,
+            result: result,
+            totalLevel: totalLevel,
+            levelPerPage: limit,
+          });
+        }
+      );
     }
   );
 });
@@ -440,7 +484,7 @@ app.post("/levels/:id", function (req, res) {
   );
 });
 
-app.post("/levels", upload.single("imageLevel"), function (req, res) {
+app.post("/level", upload.single("imageLevel"), function (req, res) {
   //create level
   let level = req.body.level;
   let idSource = req.body.idSource;
@@ -456,7 +500,7 @@ app.post("/levels", upload.single("imageLevel"), function (req, res) {
   );
 });
 
-app.put("/levels/:id", upload.single("imageLevel"), function (req, res) {
+app.put("/level/:id", upload.single("imageLevel"), function (req, res) {
   // update level
   let level = req.body.level;
   let idSource = req.body.idSource;
@@ -553,7 +597,9 @@ app.get("/favorites/:userName", function (req, res) {
     "SELECT * FROM favoritecourse WHERE userName = ? ",
     [userName],
     function (err, results) {
-      return res.send(results);
+      return res.send({
+        result: results,
+      });
       // return res.send([{id: 0}])
     }
   );
@@ -651,29 +697,29 @@ app.get("/time/:userName", function (req, res) {
     req.params.userName,
     function (err, results) {
       if (err) throw err;
-      return res.send(results);
+      return res.send({ result: results });
     }
   );
 });
 
-app.get("/users/:userName", function (req, res) {
+app.get("/user/:userName", function (req, res) {
   db.query(
     "SELECT * FROM user WHERE userName= ?",
     req.params.userName,
     function (err, results) {
       if (err) throw err;
-      return res.send(results);
+      return res.send({ result: results });
     }
   );
 });
 
-app.get("/user/:userId", function (req, res) {
+app.get("/user/:userId", isLoggedIn, function (req, res) {
   db.query(
     "SELECT userAvatar FROM user WHERE userId= ?",
     req.params.userId,
     function (err, results) {
       if (err) throw err;
-      return res.send(results);
+      return res.send(results[0].userAvatar);
     }
   );
 });
@@ -938,7 +984,11 @@ app.post("/login", function (req, res) {
               { userName: results[0].userName, userId: results[0].userId },
               "SECRETKEY"
             );
-            return res.status(200).send({token: token, userId : results[0].userId});
+            return res.status(200).send({
+              token: token,
+              userId: results[0].userId,
+              userName: results[0].userName,
+            });
           }
           return res
             .status(401)

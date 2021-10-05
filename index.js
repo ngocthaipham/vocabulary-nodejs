@@ -17,7 +17,7 @@ app.use(cors({ credential: true, origin: "http://localhost:3000" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({
-  host: "mysqldb",
+  host: "db",
   user: "root",
   password: "123123",
   database: "khoahoc",

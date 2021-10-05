@@ -2,7 +2,7 @@
 version: '3.8'
 
 services: 
-  mysqldb:
+  db:
     image: mysql:latest
     container_name: db
     restart: always
@@ -19,15 +19,15 @@ services:
       # - ./database/khoahoc.sql:/docker-entrypoint-initdb.d/khoahoc.sql
     networks:
       - my-app
-  app:
+  web:
     build:
       context: .
       dockerfile: ./Dockerfile
     container_name: server
     depends_on:
-      - mysqldb
+      - db
     links:
-      - mysqldb
+      - db
     networks:
       - my-app
     ports:

@@ -86,14 +86,6 @@ var uploadMultiple = upload.fields([
   { name: "audioWord", maxCount: 1 },
 ]);
 
-app.use(express.static(__dirname)); //here is important thing - no static directory, because all static :)
-
-if(process.env.NODE_ENV === 'production'){
-  const path  =  require('path');
-  app.get('/*',(req,res)=>{
-      res.sendfile(path.resolve(__dirname,'client','build','index.html'))
-  })
-}
 // crud sources
 app.get(
   "/sources/:username/:privateState/page:page",
@@ -1200,5 +1192,6 @@ function isLoggedIn(req, res, next) {
   }
 }
 
-app.listen(port);
-console.log("Server listening on port : " + port);
+app.listen(port, () => {
+  console.log("Server listening on port : " + port);
+});

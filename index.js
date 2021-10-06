@@ -87,9 +87,7 @@ var uploadMultiple = upload.fields([
 ]);
 
 
-app.get("/", function(req, res) {
-  console.log("server");
-})
+
 // crud sources
 app.get(
   "/sources/:username/:privateState/page:page",

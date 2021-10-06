@@ -16,19 +16,45 @@ app.use(cookieParser());
 app.use(cors({ credential: true, origin: `http://localhost:3000` }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-var db = mysql.createConnection({
-  host: "us-cdbr-east-04.cleardb.com",
-  user: "b0ba1dabaaae29",
-  password: "3f8f876d",
-  database: "heroku_34b6851416ec72c",
-});
+// var db = mysql.createConnection({
+//   host: "us-cdbr-east-04.cleardb.com",
+//   user: "b0ba1dabaaae29",
+//   password: "3f8f876d",
+//   database: "heroku_34b6851416ec72c",
+// });
 // mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
 
-db.connect(function (err) {
-  if (err) throw err;
-  console.log("connected");
-});
+var db_config = {
+  host: 'us-cdbr-east-04.cleardb.com',
+    user: 'b0ba1dabaaae29',
+    password: '3f8f876d',
+    database: 'heroku_34b6851416ec72c'
+};
 
+var db;
+
+function handleDisconnect() {
+  db = mysql.createConnection(db_config); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+
+  db.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+  db.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+}
+
+handleDisconnect();
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", true);
   // res.header("Access-Control-Allow-Origin","*");
@@ -89,7 +115,7 @@ var uploadMultiple = upload.fields([
 // crud sources
 
 app.get("/", function (req, res) {
-  db.execute("SELECT * FROM source", function (err, results) {
+  db.connect("SELECT * FROM source", function (err, results) {
     if (err) throw err;
     return res.send(results);
   });

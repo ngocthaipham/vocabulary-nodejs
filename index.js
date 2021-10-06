@@ -13,9 +13,7 @@ var path = require("path");
 
 app.use(cookieParser());
 // app.use(cors());
-app.use(
-  cors({ credential: true, origin: "https://deploy-easy-english.herokuapp.com" })
-);
+app.use(cors({ credential: true, origin: `http://localhost:${port}` }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({

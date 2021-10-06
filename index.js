@@ -12,10 +12,10 @@ const cookieParser = require("cookie-parser");
 var path = require("path");
 
 app.use(cookieParser());
-app.use(cors());
-// app.use(cors({ credential: true
-//   , origin: "http://localhost:3000" 
-// }));
+// app.use(cors());
+app.use(cors({ credential: true
+  , origin: "http://deploy-easy-english.herokuapp.com" 
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({

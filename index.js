@@ -17,10 +17,10 @@ app.use(cors({ credential: true, origin: "http://localhost:3000" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({
-  host: "us-cdbr-east-04.cleardb.com",
-  user: "b0ba1dabaaae29",
-  password: "3f8f876d",
-  database: "heroku_34b6851416ec72c"
+  host: "db",
+  user: "root",
+  password: "123123",
+  database: "khoahoc"
 });
 // mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
 
@@ -87,8 +87,15 @@ var uploadMultiple = upload.fields([
 ]);
 
 
-
 // crud sources
+
+app.get("/", function(req, res) {
+  db.query("SELECT * FROM source" , function (err, results) {
+    if (err) throw err;
+    return res.send(results);
+  })
+})
+
 app.get(
   "/sources/:username/:privateState/page:page",
   isLoggedIn,

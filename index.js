@@ -89,7 +89,7 @@ var uploadMultiple = upload.fields([
 // crud sources
 
 app.get("/", function (req, res) {
-  db.query("SELECT * FROM source", function (err, results) {
+  db.execute("SELECT * FROM source", function (err, results) {
     if (err) throw err;
     return res.send(results);
   });

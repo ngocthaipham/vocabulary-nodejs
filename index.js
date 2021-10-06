@@ -22,7 +22,7 @@ var db = mysql.createConnection({
   password: "3f8f876d",
   database: "heroku_34b6851416ec72c"
 });
-mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
+// mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
 
 db.connect(function (err) {
   if (err) throw err;
@@ -87,7 +87,9 @@ var uploadMultiple = upload.fields([
 ]);
 
 
-
+app.get("/", function(req, res) {
+  console.log("server");
+})
 // crud sources
 app.get(
   "/sources/:username/:privateState/page:page",

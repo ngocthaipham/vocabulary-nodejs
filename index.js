@@ -17,10 +17,10 @@ app.use(cors({ credential: true, origin: "http://localhost:3000" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({
-  host: "db",
-  user: "root",
-  password: "123123",
-  database: "khoahoc"
+  host: "us-cdbr-east-04.cleardb.com",
+  user: "b0ba1dabaaae29",
+  password: "3f8f876d",
+  database: "heroku_34b6851416ec72c"
 });
 // mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
 

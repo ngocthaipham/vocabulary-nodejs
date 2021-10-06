@@ -13,16 +13,16 @@ var path = require("path");
 
 app.use(cookieParser());
 // app.use(cors());
-app.use(cors({ credential: true
-  , origin: "http://deploy-easy-english.herokuapp.com" 
-}));
+app.use(
+  cors({ credential: true, origin: "https://deploy-easy-english.herokuapp.com" })
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var db = mysql.createConnection({
   host: "us-cdbr-east-04.cleardb.com",
   user: "b0ba1dabaaae29",
   password: "3f8f876d",
-  database: "heroku_34b6851416ec72c"
+  database: "heroku_34b6851416ec72c",
 });
 // mysql://b0ba1dabaaae29:3f8f876d@us-cdbr-east-04.cleardb.com/heroku_34b6851416ec72c?reconnect=true
 
@@ -88,15 +88,14 @@ var uploadMultiple = upload.fields([
   { name: "audioWord", maxCount: 1 },
 ]);
 
-
 // crud sources
 
-app.get("/", function(req, res) {
-  db.query("SELECT * FROM source" , function (err, results) {
+app.get("/", function (req, res) {
+  db.query("SELECT * FROM source", function (err, results) {
     if (err) throw err;
     return res.send(results);
-  })
-})
+  });
+});
 
 app.get(
   "/sources/:username/:privateState/page:page",

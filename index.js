@@ -86,6 +86,10 @@ var uploadMultiple = upload.fields([
   { name: "audioWord", maxCount: 1 },
 ]);
 
+
+app.get("/", function(req, res) {
+  return res.send("easy english server")
+})
 // crud sources
 app.get(
   "/sources/:username/:privateState/page:page",

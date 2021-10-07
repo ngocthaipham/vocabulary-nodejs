@@ -36,6 +36,7 @@ var db;
 function handleDisconnect() {
   db = mysql.createConnection(db_config); // Recreate the connection, since
   // the old one cannot be reused.
+console.log("connected!");
 
   db.connect(function (err) {
     // The server is either down
@@ -119,12 +120,12 @@ var uploadMultiple = upload.fields([
 
 // crud sources
 
-app.get("/", function (req, res) {
-  db.connect("SELECT * FROM source", function (err, results) {
-    if (err) throw err;
-    return res.send(results);
-  });
-});
+// app.get("/", function (req, res) {
+//   db.connect("SELECT * FROM source", function (err, results) {
+//     if (err) throw err;
+//     return res.send(results);
+//   });
+// });
 
 app.get(
   "/sources/:username/:privateState/page:page",

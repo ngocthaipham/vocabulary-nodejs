@@ -129,7 +129,6 @@ var uploadMultiple = upload.fields([
 
 app.get(
   "/sources/:username/:privateState/page:page",
-  isLoggedIn,
   function (req, res) {
     // get list sources
     let totalCourse;
